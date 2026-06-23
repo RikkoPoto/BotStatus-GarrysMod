@@ -105,9 +105,9 @@ class RanksCog(commands.Cog):
                         usuario_mencion = f"<@{rank_data['user_id']}>" if miembro else f"Usuario (ID: {rank_data['user_id']})"
                         
                         mensaje = (
-                            f"⚠️ {menciones} **¡Atención!**\n"
+                            f"⚠️{menciones}⚠️\n"
                             f"El tiempo del rango **{rank_data['role_name'].capitalize()}** del jugador {usuario_mencion} ha expirado.\n"
-                            f"👉 *El rol ha sido retirado automáticamente en Discord. Por favor, retirarlo dentro del juego.*"
+                            f"└──*El rol ha sido retirado automáticamente en Discord. Por favor, retirarlo dentro del juego.*"
                         )
                         await canal.send(mensaje)
                         
@@ -165,7 +165,7 @@ class RanksCog(commands.Cog):
             })
             save_ranks(data)
 
-            await ctx.send(f"💎 ✅ El usuario **{member.name}** ha recibido el rango **{rol_obj.name}** por un periodo de **{duration}**.")
+            await ctx.send(f" El usuario **{member.name}** ha recibido el rango **{rol_obj.name}** por un periodo de **{duration}**.✅")
 
         except discord.Forbidden:
             await ctx.send("❌ No tengo permisos para dar este rol. Asegúrate de que el rol de mi bot esté MÁS ARRIBA en la lista que los roles Esmeralda/Oro/Plata.")
@@ -174,7 +174,7 @@ class RanksCog(commands.Cog):
     async def rango_error(self, ctx, error):
         """Maneja los errores si alguien usa mal el comando."""
         if isinstance(error, (commands.MissingRequiredArgument, commands.BadArgument)):
-            await ctx.send("⚠️ **Uso incorrecto.** La estructura correcta es:\n`$rango @Usuario [esmeralda/oro/plata] [tiempo]`\n*Ejemplo:* `$rango @Xacter esmeralda 30d`")
+            await ctx.send("⚠️ **Uso incorrecto.** La estructura correcta es:\n`$rango @Usuario [Esmeralda/Oro/Plata] [tiempo]`\n*Ejemplo:* `$rango @Usuario Plata 30d`")
 
 async def setup(bot):
     await bot.add_cog(RanksCog(bot))
