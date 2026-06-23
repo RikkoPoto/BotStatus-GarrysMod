@@ -11,9 +11,9 @@ import re
 
 # 1. IDs de los roles de los rangos
 ROLES_RANGO = {
-    "esmeralda": 1519101667956625569,
-    "oro":       1519101837985185792,
-    "plata":     1519101736466513940
+    "diamond": 1519101667956625569,
+    "golden":       1519101837985185792,
+    "silver":     1519101736466513940
 }
 
 # 2. IDs de los roles que pueden usar el comando (Owner y Co-owner)
@@ -23,7 +23,7 @@ ROLES_AUTORIZADOS = [
 ]
 
 # 3. ID del canal donde el bot avisará que expiró el rango
-CANAL_NOTIFICACIONES_ID = 1502080769559105596
+CANAL_NOTIFICACIONES_ID = 1519110810436370523
 
 # ============================================================
 
@@ -100,14 +100,13 @@ class RanksCog(commands.Cog):
 
                     # 2. Enviar notificación al canal etiquetando a Owner y Co-owner
                     if canal:
-                        # Generar menciones <@&ID_DEL_ROL>
                         menciones = " ".join([f"<@&{role_id}>" for role_id in ROLES_AUTORIZADOS])
-                        usuario_mencion = f"<@{rank_data['user_id']}>" if miembro else f"Usuario (ID: {rank_data['user_id']})"
+                        usuario_mencion = f"<@{rank_data['user_id']}>"
                         
                         mensaje = (
-                            f"⚠️{menciones}⚠️\n"
+                            f"⚠️ {menciones} **¡Atención!**\n"
                             f"El tiempo del rango **{rank_data['role_name'].capitalize()}** del jugador {usuario_mencion} ha expirado.\n"
-                            f"└*El rol ha sido retirado automáticamente en Discord. Por favor, retirarlo dentro del juego.*"
+                            f"👉 *El rol ha sido retirado automáticamente en Discord. Por favor, retirarlo dentro del juego.*"
                         )
                         await canal.send(mensaje)
                         
@@ -126,18 +125,15 @@ class RanksCog(commands.Cog):
 
     @commands.command(name="rango")
     async def cmd_rango(self, ctx, member: discord.Member, nombre_rol: str, duration: str):
-        """Otorga un rango VIP temporal."""
+        """Otorga un rango VIP temporal y suma el tiempo si ya lo tiene."""
         
-        # Verificar permisos
         if not self.is_authorized(ctx.author):
             return await ctx.send("❌ No tienes permisos para usar este comando. Solo Owner/Co-owner pueden hacerlo.")
 
-        # Verificar que el rango escrito exista
         rol_key = nombre_rol.lower()
         if rol_key not in ROLES_RANGO:
-            return await ctx.send("❌ Rango no válido. Los rangos disponibles son: `esmeralda`, `oro`, `plata`.")
+            return await ctx.send("❌ Rango no válido. Los rangos disponibles son: `diamond`, `golden`, `silver`.")
 
-        # Verificar duración
         segundos = parse_duration(duration)
         if segundos <= 0:
             return await ctx.send("❌ Tiempo inválido. Usa formatos como `30d`, `24h`, `15m`.")
@@ -152,7 +148,6 @@ class RanksCog(commands.Cog):
             data = load_ranks()
             active_ranks = data.setdefault("active_ranks", [])
             
-            # Buscar si el usuario ya tiene este mismo rango activo
             rango_existente = None
             for rank in active_ranks:
                 if rank["user_id"] == member.id and rank["role_id"] == rol_id:
@@ -160,30 +155,23 @@ class RanksCog(commands.Cog):
                     break
                     
             if rango_existente:
-                # Si ya lo tiene, sumamos el tiempo al que ya tenía restante
+                # Sumamos el tiempo
                 if rango_existente["end_time"] > time.time():
                     rango_existente["end_time"] += segundos
                 else:
-                    # Por si su tiempo justo había expirado, partimos desde ahora
                     rango_existente["end_time"] = time.time() + segundos
                 
-                # Actualizamos quién le dio la extensión y cuándo
                 rango_existente["assigned_by"] = ctx.author.id
                 rango_existente["assigned_date"] = time.strftime("%Y-%m-%d %H:%M:%S")
-                
                 save_ranks(data)
                 
-                # Verificamos que tenga el rol en Discord (por si alguien se lo quitó a mano)
                 if rol_obj not in member.roles:
                     await member.add_roles(rol_obj, reason=f"Extensión de rango por {ctx.author.name}.")
                     
                 await ctx.send(f"⏳ ✅ Se ha extendido el rango **{rol_obj.name}** de **{member.name}** sumando **{duration}** adicionales.")
             
             else:
-                # Si no lo tenía, le damos el rol en Discord
                 await member.add_roles(rol_obj, reason=f"Otorgado por {ctx.author.name} por {duration}.")
-                
-                # Y guardamos un registro completamente nuevo en el JSON
                 active_ranks.append({
                     "guild_id": ctx.guild.id,
                     "user_id": member.id,
@@ -194,17 +182,55 @@ class RanksCog(commands.Cog):
                     "assigned_date": time.strftime("%Y-%m-%d %H:%M:%S")
                 })
                 save_ranks(data)
-
-            await ctx.send(f" El usuario **{member.name}** ha recibido el rango **{rol_obj.name}** por un periodo de **{duration}**.✅")
+                await ctx.send(f"💎 ✅ El usuario **{member.name}** ha recibido el rango **{rol_obj.name}** por un periodo de **{duration}**.")
 
         except discord.Forbidden:
-            await ctx.send("❌ No tengo permisos para dar este rol. Asegúrate de que el rol de mi bot esté MÁS ARRIBA en la lista que los roles Esmeralda/Oro/Plata.")
+            await ctx.send("❌ No tengo permisos. Asegúrate de que el rol de mi bot esté MÁS ARRIBA en la lista que los roles Diamond/Golden/Silver.")
 
     @cmd_rango.error
     async def rango_error(self, ctx, error):
-        """Maneja los errores si alguien usa mal el comando."""
         if isinstance(error, (commands.MissingRequiredArgument, commands.BadArgument)):
-            await ctx.send("⚠️ **Uso incorrecto.** La estructura correcta es:\n`$rango @Usuario [Esmeralda/Oro/Plata] [tiempo]`\n*Ejemplo:* `$rango @Usuario Plata 30d`")
+            await ctx.send("⚠️ **Uso incorrecto.** La estructura correcta es:\n`$rango @Usuario [diamond/golden/silver] [tiempo]`\n*Ejemplo:* `$rango @Xacter diamond 30d`")
+
+    @commands.command(name="tiemporango", aliases=["inforango", "tiempo"])
+    async def cmd_tiemporango(self, ctx, member: discord.Member = None):
+        """Consulta cuánto tiempo le queda a un usuario en su rango VIP."""
+        if member is None:
+            member = ctx.author
+
+        data = load_ranks()
+        now = time.time()
+        
+        user_ranks = [r for r in data.get("active_ranks", []) if r["user_id"] == member.id]
+        
+        if not user_ranks:
+            return await ctx.send(f"❌ **{member.name}** no tiene ningún rango VIP activo en este momento.")
+            
+        mensaje = f"📊 **Información de Rangos VIP para {member.name}**\n\n"
+        
+        for rank in user_ranks:
+            remaining = rank["end_time"] - now
+            if remaining <= 0:
+                continue
+                
+            days = int(remaining // 86400)
+            hours = int((remaining % 86400) // 3600)
+            minutes = int((remaining % 3600) // 60)
+            
+            time_str = []
+            if days > 0: time_str.append(f"**{days}** días")
+            if hours > 0: time_str.append(f"**{hours}** horas")
+            if minutes > 0: time_str.append(f"**{minutes}** minutos")
+            
+            if not time_str: 
+                tiempo_restante = "Menos de un minuto"
+            else:
+                tiempo_restante = ", ".join(time_str)
+                
+            rol_nombre = rank["role_name"].capitalize()
+            mensaje += f"💎 **Rango:** {rol_nombre}\n⏳ **Tiempo restante:** {tiempo_restante}\n\n"
+            
+        await ctx.send(mensaje)
 
 async def setup(bot):
     await bot.add_cog(RanksCog(bot))
