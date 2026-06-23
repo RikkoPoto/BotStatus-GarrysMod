@@ -23,9 +23,6 @@ def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-import asyncio
-import re
-
 def parse_duration(time_str: str) -> int:
     """Convierte un string como '24h', '10m', '1d' a segundos."""
     if not time_str:
@@ -111,13 +108,21 @@ class ModerationCog(commands.Cog):
         except discord.Forbidden:
             await ctx.send("❌ No tengo permisos suficientes para kickear a ese usuario (¿Tiene un rol superior al mío?).")
 
+    @cmd_kick.error
+    async def kick_error(self, ctx, error):
+        """Maneja los errores cuando se usa mal el comando $kick"""
+        if isinstance(error, (commands.MissingRequiredArgument, commands.BadArgument)):
+            await ctx.send("⚠️ **Uso incorrecto.** La estructura correcta es:\n`$kick @Usuario [motivo opcional]`\n*Ejemplo:* `$kick @Usuario Romper las reglas`")
+        elif isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ No tienes permisos para usar este comando.")
+
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True) # Requiere permisos de banear
     async def cmd_ban(self, ctx, member: discord.Member, duration: str = None, *, reason: str = "Sin motivo"):
         """
         Banea a un usuario. 
-        Uso: !ban @Usuario [tiempo] [motivo]
-        Ejemplos: !ban @Xacter 24h Spam | !ban @Xacter Toxicidad (Ban permanente)
+        Uso: $ban @Usuario [tiempo] [motivo]
+        Ejemplos: $ban @Usuario 24h Spam | $ban @Usuario Toxicidad (Ban permanente)
         """
         if member == ctx.author:
             return await ctx.send("❌ No puedes banearte a ti mismo.")
@@ -125,7 +130,7 @@ class ModerationCog(commands.Cog):
         # Calculamos los segundos basados en la duración
         seconds = parse_duration(duration) if duration else 0
         
-        # Flexibilidad: Si el usuario escribe "!ban @User Motivo" (sin tiempo),
+        # Flexibilidad: Si el usuario escribe "$ban @User Motivo" (sin tiempo),
         # 'duration' tomará la palabra "Motivo". Como no es un tiempo válido (seconds = 0),
         # lo reasignamos para que sea parte de la razón del ban y lo hacemos permanente.
         if duration and seconds == 0:
@@ -165,6 +170,14 @@ class ModerationCog(commands.Cog):
 
         except discord.Forbidden:
             await ctx.send("❌ No tengo permisos suficientes para banear a ese usuario (¿Tiene un rol superior al mío?).")
+
+    @cmd_ban.error
+    async def ban_error(self, ctx, error):
+        """Maneja los errores cuando se usa mal el comando $ban"""
+        if isinstance(error, (commands.MissingRequiredArgument, commands.BadArgument)):
+            await ctx.send("⚠️ **Uso incorrecto.** La estructura correcta es:\n`$ban @Usuario [tiempo opcional] [motivo]`\n*Ejemplos:*\n`$ban @Usuario 24h Spam` (Ban temporal)\n`$ban @Usuario Toxicidad` (Ban permanente)")
+        elif isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ No tienes permisos para usar este comando.")
 
 async def setup(bot):
     await bot.add_cog(ModerationCog(bot))
