@@ -2,3 +2,5 @@
 cogs/moderation_cog.py
 cogs/__pycache__/moderation_cog.cpython-314.pyc
 mod_data.json
+ranks_data.json
+cogs/__pycache__/rangos_cog.cpython-314.pyc
