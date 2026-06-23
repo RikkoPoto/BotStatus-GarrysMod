@@ -14,7 +14,7 @@ class MainBot(commands.Bot):
     async def setup_hook(self):
         # Lista de cogs a cargar (Aquí agregamos el nuevo de moderación)
         modulos = [
-            "cogs.status_cog",
+            "",
             "cogs.rangos_cog"
         ]
         

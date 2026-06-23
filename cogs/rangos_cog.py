@@ -88,7 +88,17 @@ class RanksCog(commands.Cog):
                 guild = self.bot.get_guild(rank_data["guild_id"])
                 if guild:
                     canal = guild.get_channel(CANAL_NOTIFICACIONES_ID)
+                    
+                    # --- NUEVA BÚSQUEDA FORZADA ---
                     miembro = guild.get_member(rank_data["user_id"])
+                    if not miembro:
+                        try:
+                            # Si no está en memoria, lo buscamos en la base de datos de Discord
+                            miembro = await guild.fetch_member(rank_data["user_id"])
+                        except discord.NotFound:
+                            # El usuario se salió del servidor
+                            miembro = None 
+                            
                     role = guild.get_role(rank_data["role_id"])
 
                     # 1. Quitar el rol en Discord si el usuario sigue en el server
@@ -101,7 +111,7 @@ class RanksCog(commands.Cog):
                     # 2. Enviar notificación al canal etiquetando a Owner y Co-owner
                     if canal:
                         menciones = " ".join([f"<@&{role_id}>" for role_id in ROLES_AUTORIZADOS])
-                        usuario_mencion = f"<@{rank_data['user_id']}>"
+                        usuario_mencion = f"<@{rank_data['user_id']}>" if miembro else f"Usuario (ID: {rank_data['user_id']})"
                         
                         mensaje = (
                             f"⚠️ {menciones} **¡Atención!**\n"
