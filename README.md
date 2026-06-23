@@ -38,7 +38,14 @@ source venv/bin/activate
 # Instalar dependencias
 pip install -r requirements.txt
 ```
-
+## Implementacion de las configuraciones cog
+```bash
+#En main.py existe una lista llamada modulos, donde podremos incorporar nuestras configuraciones, en caso de agregar una adicional de la carpeta cogs
+        modulos = [
+            "cogs.status_cog",
+            "cogs.rangos_cog"
+        ]
+```
 ---
 
 ## 3. Configurar las variables
@@ -98,8 +105,10 @@ Deberías ver:
 
 | Comando | Quién | Descripción |
 |---------|-------|-------------|
-| `!status` | Cualquiera | Muestra el estado en ese momento |
-| `!setstatus` | Solo admins | Crea/mueve el mensaje de estado al canal actual |
+| `$status` | Cualquiera | Muestra el estado en ese momento |
+| `$setstatus` | Solo admins | Crea/mueve el mensaje de estado al canal actual |
+| `$rango` | Solo Admins | Otorga rango a los usuarios |
+| `$tiemporango` | Cualquiera | Revisa cuanto tiempo le queda a un usuario con un rango |
 
 ---
 
@@ -118,11 +127,13 @@ Deberías ver:
 ```
 gmod_bot/
 ├── cogs
-|     ├── moderation_cog.py
-|     └── status_cog.py
+|     ├── moderation_cog.py   ← Configuracion de Kicks y bans
+|     ├── rangos_cog.py   ← Configuracion de Rangos
+|     └── status_cog.py   ← Configuracion de Status
 ├── main.py           ← Bot principal
 ├── requirements.txt  ← Dependencias Python
 ├── .env              ← Token (NO subir a git)
+├── ranks_data.json   ← Arreglo que gestiona tiempo de rangos_cog.py
 └── server_status.py  ← Logica Deteccion de Server Gmod
 ```
 
