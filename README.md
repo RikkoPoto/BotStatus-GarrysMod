@@ -44,13 +44,13 @@ pip install -r requirements.txt
 ## 3. Configurar las variables
 
 ### Token del bot
-Crea un archivo llamado `.env` en la carpeta (copia `.env.example`):
+Crea un archivo llamado `.env`:
 ```
 DISCORD_TOKEN=pega_tu_token_aqui
 ```
 
-### Variables en `bot.py`
-Abre `bot.py` y edita la sección **CONFIGURACIÓN**:
+### Variables en `server_status.py`
+Abre `server_status.py` y edita la sección **CONFIGURACIÓN**:
 
 ```python
 SERVER_IP   = "192.168.1.100"     # IP de tu servidor Gmod
@@ -117,17 +117,20 @@ Deberías ver:
 
 ```
 gmod_bot/
-├── bot.py            ← Bot principal
+├── cogs
+|     ├── moderation_cog.py
+|     └── status_cog.py
+├── main.py           ← Bot principal
 ├── requirements.txt  ← Dependencias Python
 ├── .env              ← Token (NO subir a git)
-└── .env.example      ← Plantilla del .env
+└── server_status.py  ← Logica Deteccion de Server Gmod
 ```
 
 ---
 
 <div align="center">
 
-*Desarrollado por **ExilRaizen** para **ChileLifeRP***
+*Desarrollado por **ExilRaizen** y **RikkoPoto** para **ChileLifeRP***
 
 *© 2026 ChileLifeRP — Todos los derechos reservados*
 
